@@ -2,9 +2,71 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUpdatePost;
+use App\Models\Post;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
-    //
+    public function index(){
+        $posts = Post::orderby('id', 'DESC')->paginate(1);
+        return view('admin.posts.index', compact('posts'));
+    }
+
+    public function creat(){
+        return view('admin.posts.creat');
+    }
+
+    public function departamentos(){
+        return view('admin.posts.departamentos');
+    }
+
+    public function store(StoreUpdatePost $request){
+        $post = Post::create($request->all());
+        return redirect()->route('posts.index');
+    }
+    /*
+    public function show($id){
+        $post = Post::find($id);
+        if(!$post){
+            return redirect()->route('posts.index');
+        }
+        return view('admin.posts.show', compact('post'));
+    }*/
+
+ public function destroy($id){
+    $post = Post::find($id);
+    $post->delete();
+    return redirect()->route('posts.index');
+ }
+
+ public function edit($id){
+    $post = Post::find($id);
+    if(!$post){
+        return redirect()->route('posts.index');
+    }
+    return view('admin.posts.edit', compact('post'));
+ }
+
+ public function update(StoreUpdatePost $request, $id){
+    $post = Post::find($id);
+    if(!$post){
+        return redirect()->back();
+    }
+    $post->update($request->all());
+    return redirect()
+        ->route('posts.index')
+        ->with('message', 'Alterado com sucesso');
+  }
+
+  public function search(Request $request){
+
+      $filtro = $request->all();
+    $posts = Post:: where ('title', 'LIKE', "%{$request->filtro}%")
+                    ->orwhere ('content', 'LIKE', "%{$request->filtro}%")
+                    ->orderby('title', 'DESC')
+                    ->paginate(1);
+    return view('admin.posts.index', compact('posts', 'filtro'));
+  }
+
 }
